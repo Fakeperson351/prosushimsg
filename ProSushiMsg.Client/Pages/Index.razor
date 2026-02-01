@@ -1,0 +1,75 @@
+@page "/"
+@using ProSushiMsg.Client.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div style="text-align: center;">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; color: #666;">@_status</p>
+    </div>
+</div>
+
+@code {
+    private string _status = "Загрузка...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _status = "Инициализация AuthService...";
+            StateHasChanged();
+            
+            Console.WriteLine("?? Index.razor: Начало инициализации");
+            
+            // Инициализируем AuthService (загружаем токен из localStorage)
+            await AuthService.InitializeAsync();
+            
+            Console.WriteLine($"?? Index.razor: IsAuthenticated = {AuthService.IsAuthenticated}");
+            _status = AuthService.IsAuthenticated ? "Вход выполнен..." : "Переход на страницу входа...";
+            StateHasChanged();
+
+            await Task.Delay(500); // Даём время на отображение статуса
+
+            // Если уже авторизован — на чаты, иначе на логин
+            if (AuthService.IsAuthenticated)
+            {
+                Console.WriteLine("? Index.razor: Редирект на /chats");
+                Navigation.NavigateTo("/chats");
+            }
+            else
+            {
+                Console.WriteLine("?? Index.razor: Редирект на /login");
+                Navigation.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"? Index.razor ERROR: {ex.Message}");
+            Console.Error.WriteLine($"Stack: {ex.StackTrace}");
+            _status = $"Ошибка: {ex.Message}";
+            StateHasChanged();
+            
+            // Всё равно идём на логин при ошибке
+            await Task.Delay(2000);
+            Navigation.NavigateTo("/login");
+        }
+    }
+}
+
+<style>
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>

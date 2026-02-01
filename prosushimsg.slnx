@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ProSushiMsg.Client/ProSushiMsg.Client.csproj" />
+  <Project Path="prosushimsg/prosushimsg.csproj" />
+</Solution>

@@ -1,0 +1,26 @@
+// Добавь это в wwwroot/index.html перед </body> для отладки
+
+<script>
+    // Перехватываем все fetch запросы для отладки
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        console.log('?? FETCH:', args[0], args[1]);
+        return originalFetch.apply(this, args)
+            .then(response => {
+                console.log('? RESPONSE:', args[0], 'Status:', response.status);
+                return response;
+            })
+            .catch(error => {
+                console.error('? FETCH ERROR:', args[0], error);
+                throw error;
+            });
+    };
+    
+    // Перехватываем localStorage
+    const originalGetItem = localStorage.getItem;
+    localStorage.getItem = function(key) {
+        const value = originalGetItem.call(this, key);
+        console.log('?? localStorage.getItem:', key, '?', value ? value.substring(0, 50) + '...' : 'null');
+        return value;
+    };
+</script>
