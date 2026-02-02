@@ -1,10 +1,10 @@
-using System.Net.Http.Json;
+п»їusing System.Net.Http.Json;
 using System.Text.Json;
 
 namespace ProSushiMsg.Client.Services;
 
 /// <summary>
-/// Сервис аутентификации. Управляет JWT токеном и состоянием пользователя.
+/// РЎРµСЂРІРёСЃ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё. РЈРїСЂР°РІР»СЏРµС‚ JWT С‚РѕРєРµРЅРѕРј Рё СЃРѕСЃС‚РѕСЏРЅРёРµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
 /// </summary>
 public class AuthService
 {
@@ -20,11 +20,11 @@ public class AuthService
     {
         _httpClient = httpClient;
         _localStorage = localStorage;
-        Console.WriteLine("? AuthService создан");
+        Console.WriteLine("? AuthService СЃРѕР·РґР°РЅ");
     }
 
     /// <summary>
-    /// Загружает сохранённый токен при загрузке приложения.
+    /// Р—Р°РіСЂСѓР¶Р°РµС‚ СЃРѕС…СЂР°РЅС‘РЅРЅС‹Р№ С‚РѕРєРµРЅ РїСЂРё Р·Р°РіСЂСѓР·РєРµ РїСЂРёР»РѕР¶РµРЅРёСЏ.
     /// </summary>
     public async Task InitializeAsync()
     {
@@ -35,7 +35,7 @@ public class AuthService
             {
                 CurrentUserId = await _localStorage.GetAsync<int>("auth_user_id");
                 
-                // Добавляем токен в заголовки HTTP
+                // Р”РѕР±Р°РІР»СЏРµРј С‚РѕРєРµРЅ РІ Р·Р°РіРѕР»РѕРІРєРё HTTP
                 _httpClient.DefaultRequestHeaders.Authorization = 
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", CurrentToken);
                 
@@ -44,14 +44,14 @@ public class AuthService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Ошибка инициализации AuthService: {ex.Message}");
+            Console.WriteLine($"РћС€РёР±РєР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё AuthService: {ex.Message}");
             CurrentToken = null;
             CurrentUserId = null;
         }
     }
 
     /// <summary>
-    /// Регистрация нового пользователя.
+    /// Р РµРіРёСЃС‚СЂР°С†РёСЏ РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
     /// </summary>
     public async Task<(bool Success, string? Error)> RegisterAsync(string username, string email, string password)
     {
@@ -77,7 +77,7 @@ public class AuthService
     }
 
     /// <summary>
-    /// Вход в систему. Сохраняет JWT токен.
+    /// Р’С…РѕРґ РІ СЃРёСЃС‚РµРјСѓ. РЎРѕС…СЂР°РЅСЏРµС‚ JWT С‚РѕРєРµРЅ.
     /// </summary>
     public async Task<(bool Success, string? Error)> LoginAsync(string username, string password)
     {
@@ -89,7 +89,7 @@ public class AuthService
             {
                 var json = await response.Content.ReadAsStringAsync();
                 
-                // Опции для десериализации (case-insensitive)
+                // РћРїС†РёРё РґР»СЏ РґРµСЃРµСЂРёР°Р»РёР·Р°С†РёРё (case-insensitive)
                 var options = new JsonSerializerOptions 
                 { 
                     PropertyNameCaseInsensitive = true 
@@ -98,7 +98,7 @@ public class AuthService
                 var result = JsonSerializer.Deserialize<LoginResponse>(json, options);
                 
                 if (result == null || string.IsNullOrEmpty(result.Token))
-                    return (false, "Неверный формат ответа от сервера");
+                    return (false, "РќРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚ РѕС‚РІРµС‚Р° РѕС‚ СЃРµСЂРІРµСЂР°");
 
                 CurrentToken = result.Token;
                 CurrentUserId = result.UserId;
@@ -106,7 +106,7 @@ public class AuthService
                 await _localStorage.SetAsync("auth_token", CurrentToken);
                 await _localStorage.SetAsync("auth_user_id", CurrentUserId);
 
-                // Добавляем токен в заголовки HTTP
+                // Р”РѕР±Р°РІР»СЏРµРј С‚РѕРєРµРЅ РІ Р·Р°РіРѕР»РѕРІРєРё HTTP
                 _httpClient.DefaultRequestHeaders.Authorization = 
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", CurrentToken);
 
@@ -123,8 +123,9 @@ public class AuthService
         }
     }
 
+
     /// <summary>
-    /// Выход из системы. Удаляет токен.
+    /// Р’С‹С…РѕРґ РёР· СЃРёСЃС‚РµРјС‹. РЈРґР°Р»СЏРµС‚ С‚РѕРєРµРЅ.
     /// </summary>
     public async Task LogoutAsync()
     {
@@ -132,7 +133,36 @@ public class AuthService
         CurrentUserId = null;
         await _localStorage.RemoveAsync("auth_token");
         await _localStorage.RemoveAsync("auth_user_id");
+        await _localStorage.RemoveAsync("selected_chat_id"); // РћС‡РёСЃС‚РєР° РІС‹Р±СЂР°РЅРЅРѕРіРѕ С‡Р°С‚Р°
         _httpClient.DefaultRequestHeaders.Authorization = null;
+        OnAuthChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// РЎРѕС…СЂР°РЅРёС‚СЊ РІС‹Р±СЂР°РЅРЅС‹Р№ С‡Р°С‚ РІ LocalStorage РґР»СЏ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ РїРѕСЃР»Рµ РїРµСЂРµР·Р°РіСЂСѓР·РєРё.
+    /// </summary>
+    public async Task SaveSelectedChatAsync(int chatId)
+    {
+        await _localStorage.SetAsync("selected_chat_id", chatId);
+    }
+
+    /// <summary>
+    /// РџРѕР»СѓС‡РёС‚СЊ СЃРѕС…СЂР°РЅС‘РЅРЅС‹Р№ ID РІС‹Р±СЂР°РЅРЅРѕРіРѕ С‡Р°С‚Р° РёР· LocalStorage.
+    /// </summary>
+    public async Task<int?> GetSelectedChatIdAsync()
+    {
+        return await _localStorage.GetAsync<int?>("selected_chat_id");
+    }
+
+    /// <summary>
+    /// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РѕРєРµРЅ Рё UserId РІСЂСѓС‡РЅСѓСЋ (РґР»СЏ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ СЃРµСЃСЃРёРё).
+    /// </summary>
+    public void SetToken(string token, int userId)
+    {
+        CurrentToken = token;
+        CurrentUserId = userId;
+        _httpClient.DefaultRequestHeaders.Authorization = 
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         OnAuthChanged?.Invoke();
     }
 
@@ -142,3 +172,4 @@ public class AuthService
         public int UserId { get; set; }
     }
 }
+

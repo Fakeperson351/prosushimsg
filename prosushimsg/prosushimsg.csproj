@@ -15,6 +15,12 @@
     <!-- Явно указываем безопасную версию для устранения уязвимости GHSA-59j7-ghrg-fj52 -->
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.2.1" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.2" />
+  </ItemGroup>
+
+  <!-- Ссылка на клиентский проект Blazor WASM -->
+  <ItemGroup>
+    <ProjectReference Include="..\ProSushiMsg.Client\ProSushiMsg.Client.csproj" />
   </ItemGroup>
 
 </Project>

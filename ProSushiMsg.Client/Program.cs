@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Web;
+п»їusing Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using ProSushiMsg.Client;
 using ProSushiMsg.Client.Services;
@@ -9,37 +9,44 @@ try
     builder.RootComponents.Add<App>("#app");
     builder.RootComponents.Add<HeadOutlet>("head::after");
 
-    // Настройка HttpClient с базовым адресом API
-    var apiBaseAddress = builder.Configuration["ApiBaseAddress"] ?? "http://localhost:5000";
+    // РќР°СЃС‚СЂРѕР№РєР° HttpClient СЃ Р±Р°Р·РѕРІС‹Рј Р°РґСЂРµСЃРѕРј API
+    var apiBaseAddress = builder.Configuration["ApiBaseAddress"];
     
-    // Правильная регистрация HttpClient для всех сервисов
+    // Р•СЃР»Рё РїСѓСЃС‚РѕР№ РёР»Рё РЅРµ Р·Р°РґР°РЅ вЂ” РёСЃРїРѕР»СЊР·СѓРµРј С‚РµРєСѓС‰РёР№ host (РґР»СЏ production)
+    if (string.IsNullOrWhiteSpace(apiBaseAddress))
+    {
+        apiBaseAddress = builder.HostEnvironment.BaseAddress;
+    }
+    
+    Console.WriteLine($"рџЊђ API Base Address: {apiBaseAddress}");
+    
+    // Р РµРіРёСЃС‚СЂР°С†РёСЏ СЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ HttpClient РґР»СЏ РІСЃРµС… СЃРµСЂРІРёСЃРѕРІ
     builder.Services.AddScoped(sp => 
     {
         var client = new HttpClient { BaseAddress = new Uri(apiBaseAddress) };
         return client;
     });
 
-    // Регистрация сервисов в правильном порядке (без circular dependencies)
+    // Р РµРіРёСЃС‚СЂР°С†РёСЏ СЃРµСЂРІРёСЃРѕРІ РІ РїСЂР°РІРёР»СЊРЅРѕРј РїРѕСЂСЏРґРєРµ (Р±РµР· circular dependencies)
     builder.Services.AddScoped<LocalStorageService>();
     builder.Services.AddScoped<EncryptionService>();
     builder.Services.AddScoped<AuthService>();
     builder.Services.AddScoped<ChatService>();
     
-    // SignalRService с правильной фабрикой (получаем apiBaseAddress из конфигурации)
+    // SignalRService СЃ РїСЂР°РІРёР»СЊРЅРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРµР№ (РїРµСЂРµРґР°С‘Рј apiBaseAddress РёР· РєРѕРЅС„РёРіСѓСЂР°С†РёРё)
     builder.Services.AddScoped<SignalRService>(sp =>
     {
         var authService = sp.GetRequiredService<AuthService>();
         return new SignalRService(authService, apiBaseAddress);
     });
 
-    Console.WriteLine("? Все сервисы зарегистрированы");
-
+    Console.WriteLine("вњ… Р’СЃРµ СЃРµСЂРІРёСЃС‹ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅС‹");
     
     await builder.Build().RunAsync();
 }
 catch (Exception ex)
 {
-    Console.Error.WriteLine($"?? КРИТИЧЕСКАЯ ОШИБКА при запуске:");
+    Console.Error.WriteLine($"вќЊ РљСЂРёС‚РёС‡РµСЃРєР°СЏ РѕС€РёР±РєР° РїСЂРё Р·Р°РїСѓСЃРєРµ:");
     Console.Error.WriteLine($"Message: {ex.Message}");
     Console.Error.WriteLine($"Type: {ex.GetType().Name}");
     Console.Error.WriteLine($"StackTrace: {ex.StackTrace}");
@@ -50,7 +57,5 @@ catch (Exception ex)
         Console.Error.WriteLine($"InnerStackTrace: {ex.InnerException.StackTrace}");
     }
     
-    throw; // Пробрасываем дальше для отображения в браузере
+    throw;
 }
-
-

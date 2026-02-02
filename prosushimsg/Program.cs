@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Настройка портов явно
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenLocalhost(5000); // HTTP на 5000
+    options.ListenAnyIP(5000); // HTTP на всех интерфейсах (0.0.0.0:5000)
 });
 
 // База данных SQLite
@@ -70,11 +70,17 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
+// Настройка для Blazor WebAssembly (клиент)
+app.UseBlazorFrameworkFiles(); // Обслуживание файлов Blazor WASM
+app.UseStaticFiles();          // Обслуживание статических файлов (CSS, JS, images)
+
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub"); // WebSocket endpoint
+app.MapFallbackToFile("index.html"); // SPA fallback для клиента
 
 app.Run();
+

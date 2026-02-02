@@ -1,16 +1,17 @@
-@page "/chats"
+п»ї@page "/chats"
 @using ProSushiMsg.Client.Services
 @inject AuthService AuthService
 @inject ChatService ChatService
 @inject SignalRService SignalRService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 @implements IAsyncDisposable
 
 <div class="chats-container">
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>?? Чаты</h2>
-            <button class="btn-icon" @onclick="ShowNewChatDialog" title="Новый чат">
+            <h2>?? Р§Р°С‚С‹</h2>
+            <button class="btn-icon" @onclick="ShowNewChatDialog" title="РќРѕРІС‹Р№ С‡Р°С‚">
                 ?
             </button>
         </div>
@@ -21,7 +22,7 @@
         }
         else if (ChatsList.Count == 0)
         {
-            <p class="empty-state">Нет чатов. Начни новый разговор!</p>
+            <p class="empty-state">РќРµС‚ С‡Р°С‚РѕРІ. РќР°С‡РЅРё РЅРѕРІС‹Р№ СЂР°Р·РіРѕРІРѕСЂ!</p>
         }
         else
         {
@@ -36,7 +37,7 @@
                         </div>
                         <div class="chat-info">
                             <div class="chat-name">@chat.OtherUserName</div>
-                            <div class="chat-preview">@(chat.LastMessage ?? "Нет сообщений")</div>
+                            <div class="chat-preview">@(chat.LastMessage ?? "РќРµС‚ СЃРѕРѕР±С‰РµРЅРёР№")</div>
                         </div>
                         @if (chat.UnreadCount > 0)
                         {
@@ -52,8 +53,8 @@
         @if (SelectedChat == null)
         {
             <div class="empty-state-chat">
-                <h2>Выбери чат</h2>
-                <p>или создай новый</p>
+                <h2>Р’С‹Р±РµСЂРё С‡Р°С‚</h2>
+                <p>РёР»Рё СЃРѕР·РґР°Р№ РЅРѕРІС‹Р№</p>
             </div>
         }
         else
@@ -62,10 +63,10 @@
                 <div>
                     <h3>@SelectedChat.OtherUserName</h3>
                     <span class="status-text @(SelectedChat.IsOnline ? "online" : "offline")">
-                        @(SelectedChat.IsOnline ? "?? онлайн" : "? оффлайн")
+                        @(SelectedChat.IsOnline ? "?? РѕРЅР»Р°Р№РЅ" : "? РѕС„С„Р»Р°Р№РЅ")
                     </span>
                 </div>
-                <button class="btn-icon" @onclick="LogoutAsync" title="Выход">
+                <button class="btn-icon" @onclick="LogoutAsync" title="Р’С‹С…РѕРґ">
                     ??
                 </button>
             </div>
@@ -109,7 +110,7 @@
             <div class="message-input-area">
                 <input type="text" 
                        class="message-input" 
-                       placeholder="Введи сообщение..." 
+                       placeholder="Р’РІРµРґРё СЃРѕРѕР±С‰РµРЅРёРµ..." 
                        @bind="MessageInput"
                        @onkeyup="@(async (KeyboardEventArgs e) => { if (e.Key == "Enter") { await SendMessage(); } })" />
                 <button class="btn-send" @onclick="SendMessage" disabled="@(string.IsNullOrEmpty(MessageInput) || IsSending)">
@@ -124,28 +125,28 @@
     </div>
 </div>
 
-@* Модальное окно нового чата *@
+@* РњРѕРґР°Р»СЊРЅРѕРµ РѕРєРЅРѕ РЅРѕРІРѕРіРѕ С‡Р°С‚Р° *@
 @if (ShowNewChatModal)
 {
     <div class="modal-overlay" @onclick="CloseNewChatDialog">
         <div class="modal-content" @onclick:stopPropagation="true">
             <div class="modal-header">
-                <h3>Новый чат</h3>
+                <h3>РќРѕРІС‹Р№ С‡Р°С‚</h3>
                 <button class="btn-close" @onclick="CloseNewChatDialog">?</button>
             </div>
             <div class="modal-body">
-                <label>Введите имя пользователя:</label>
+                <label>Р’РІРµРґРёС‚Рµ РёРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ:</label>
                 <input type="text" 
                        class="form-control" 
-                       placeholder="Username пользователя"
+                       placeholder="Username РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ"
                        @bind="NewChatUsername"
                        @onkeyup="@(async (KeyboardEventArgs e) => { if (e.Key == "Enter") { await CreateNewChat(); } })" />
-                <p class="help-text">Введите username пользователя для начала чата</p>
+                <p class="help-text">Р’РІРµРґРёС‚Рµ username РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РґР»СЏ РЅР°С‡Р°Р»Р° С‡Р°С‚Р°</p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" @onclick="CloseNewChatDialog">Отмена</button>
+                <button class="btn btn-secondary" @onclick="CloseNewChatDialog">РћС‚РјРµРЅР°</button>
                 <button class="btn btn-primary" @onclick="CreateNewChat" disabled="@string.IsNullOrWhiteSpace(NewChatUsername)">
-                    Начать чат
+                    РќР°С‡Р°С‚СЊ С‡Р°С‚
                 </button>
             </div>
         </div>
@@ -168,34 +169,60 @@ private string NewChatUsername = "";
 
     protected override async Task OnInitializedAsync()
     {
-        // Проверка аутентификации
-        if (!AuthService.IsAuthenticated)
-            Navigation.NavigateTo("/login");
+        Console.WriteLine("рџ”µ Chats: РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ...");
 
-        // Загрузка чатов
+        // РџСЂРѕРІРµСЂРєР° Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё
+        if (!AuthService.IsAuthenticated)
+        {
+            Console.WriteLine("вќЊ РќРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ, РїРµСЂРµС…РѕРґ РЅР° /login");
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        // Р—Р°РіСЂСѓР·РєР° С‡Р°С‚РѕРІ
         ChatsList = await ChatService.GetChatsAsync();
         IsLoading = false;
 
-        // Подключение к SignalR
+        // Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РІС‹Р±СЂР°РЅРЅРѕРіРѕ С‡Р°С‚Р° РёР· LocalStorage
+        var savedChatId = await AuthService.GetSelectedChatIdAsync();
+        if (savedChatId.HasValue && savedChatId.Value > 0)
+        {
+            Console.WriteLine($"рџ”„ Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ С‡Р°С‚Р° ID: {savedChatId.Value}");
+            var savedChat = ChatsList.FirstOrDefault(c => c.Id == savedChatId.Value);
+            if (savedChat != null)
+            {
+                await SelectChat(savedChat);
+            }
+        }
+
+        // РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє SignalR
         try
         {
             await SignalRService.ConnectAsync();
             SignalRService.OnMessageReceived += OnMessageReceived;
             SignalRService.OnUserStatusChanged += OnUserStatusChanged;
+            Console.WriteLine("вњ… SignalR РїРѕРґРєР»СЋС‡РµРЅ");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"SignalR error: {ex.Message}");
+            Console.WriteLine($"вќЊ SignalR error: {ex.Message}");
         }
     }
 
     private async Task SelectChat(ChatDto chat)
     {
+        Console.WriteLine($"рџ“ќ Р’С‹Р±СЂР°РЅ С‡Р°С‚ СЃ: {chat.OtherUserName}");
         SelectedChat = chat;
         SelectedChatId = chat.Id;
+
+        // РЎРѕС…СЂР°РЅРµРЅРёРµ РІС‹Р±СЂР°РЅРЅРѕРіРѕ С‡Р°С‚Р° РІ LocalStorage
+        await AuthService.SaveSelectedChatAsync(chat.Id);
+
         Messages = await ChatService.GetMessagesAsync(chat.Id);
+        
+        // РђРІС‚РѕРїСЂРѕРєСЂСѓС‚РєР° РІРЅРёР· РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё СЃРѕРѕР±С‰РµРЅРёР№
         await Task.Delay(100);
-        // Scroll to bottom
+        await ScrollToBottom();
     }
 
     private async Task SendMessage()
@@ -204,22 +231,28 @@ private string NewChatUsername = "";
             return;
 
         IsSending = true;
+        var tempMessage = MessageInput;
+        MessageInput = ""; // РћС‡РёС‰Р°РµРј РїРѕР»Рµ СЃСЂР°Р·Сѓ
+
         try
         {
-            await SignalRService.SendMessageAsync(MessageInput, SelectedChat.Id);
-            MessageInput = "";
+            await SignalRService.SendMessageAsync(tempMessage, SelectedChat.Id);
             Messages.Add(new MessageDto
             {
                 SenderId = AuthService.CurrentUserId ?? 0,
-                SenderName = "Ты",
-                Content = MessageInput,
+                SenderName = "Р’С‹",
+                Content = tempMessage,
                 Timestamp = DateTime.Now,
                 IsRead = true
             });
+            
+            // РђРІС‚РѕРїСЂРѕРєСЂСѓС‚РєР° РІРЅРёР· РїРѕСЃР»Рµ РѕС‚РїСЂР°РІРєРё
+            await ScrollToBottom();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Send error: {ex.Message}");
+            Console.WriteLine($"вќЊ Send error: {ex.Message}");
+            MessageInput = tempMessage; // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚ РїСЂРё РѕС€РёР±РєРµ
         }
         finally
         {
@@ -227,7 +260,7 @@ private string NewChatUsername = "";
         }
     }
 
-    private void OnMessageReceived(int userId, string userName, string message)
+    private async void OnMessageReceived(int userId, string userName, string message)
     {
         Messages.Add(new MessageDto
         {
@@ -238,6 +271,9 @@ private string NewChatUsername = "";
             IsRead = false
         });
         StateHasChanged();
+        
+        // РђРІС‚РѕРїСЂРѕРєСЂСѓС‚РєР° РІРЅРёР· РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РЅРѕРІРѕРіРѕ СЃРѕРѕР±С‰РµРЅРёСЏ
+        await ScrollToBottom();
     }
 
     private void OnUserStatusChanged(int userId, bool isOnline)
@@ -250,9 +286,35 @@ private string NewChatUsername = "";
         }
     }
 
+    /// <summary>
+    /// РђРІС‚РѕРїСЂРѕРєСЂСѓС‚РєР° РєРѕРЅС‚РµР№РЅРµСЂР° СЃРѕРѕР±С‰РµРЅРёР№ РІРЅРёР·
+    /// </summary>
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("scrollToBottom", "messages-container");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"вљ пёЏ Scroll error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РїРѕСЃР»Рµ РєР°Р¶РґРѕРіРѕ СЂРµРЅРґРµСЂР° РґР»СЏ Р°РІС‚РѕРїСЂРѕРєСЂСѓС‚РєРё
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender && Messages.Any())
+        {
+            await ScrollToBottom();
+        }
+    }
+
     private async Task HandleFileUpload(ChangeEventArgs e)
     {
-        // Реализуем загрузку файлов позже
+        // Р РµР°Р»РёР·СѓРµРј Р·Р°РіСЂСѓР·РєСѓ С„Р°Р№Р»РѕРІ РїРѕР·Р¶Рµ
     }
 
     private void ShowNewChatDialog()
@@ -273,12 +335,12 @@ private string NewChatUsername = "";
         if (string.IsNullOrWhiteSpace(NewChatUsername))
             return;
 
-        // Здесь должна быть логика поиска пользователя по имени и создания чата
-        // Пока просто закроем диалог
-        Console.WriteLine($"Создание чата с пользователем: {NewChatUsername}");
+        // Р—РґРµСЃСЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р»РѕРіРёРєР° РїРѕРёСЃРєР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїРѕ РёРјРµРЅРё Рё СЃРѕР·РґР°РЅРёСЏ С‡Р°С‚Р°
+        // РџРѕРєР° РїСЂРѕСЃС‚Рѕ Р·Р°РєСЂРѕРµРј РґРёР°Р»РѕРі
+        Console.WriteLine($"РЎРѕР·РґР°РЅРёРµ С‡Р°С‚Р° СЃ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј: {NewChatUsername}");
         
-        // TODO: Реализовать API endpoint для поиска пользователя и создания чата
-        // Например: POST /api/chats/start с параметром username
+        // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ API endpoint РґР»СЏ РїРѕРёСЃРєР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Рё СЃРѕР·РґР°РЅРёСЏ С‡Р°С‚Р°
+        // РќР°РїСЂРёРјРµСЂ: POST /api/chats/start СЃ РїР°СЂР°РјРµС‚СЂРѕРј username
         
         CloseNewChatDialog();
     }
@@ -291,8 +353,8 @@ private string NewChatUsername = "";
 
     private void HandleFileButtonClick()
     {
-        // File upload через форму, не через Click()
-        // Будет реализовано позже через drag-drop
+        // File upload С‡РµСЂРµР· С„РѕСЂРјСѓ, РЅРµ С‡РµСЂРµР· Click()
+        // Р‘СѓРґРµС‚ СЂРµР°Р»РёР·РѕРІР°РЅРѕ РїРѕР·Р¶Рµ С‡РµСЂРµР· drag-drop
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
@@ -573,7 +635,7 @@ private string NewChatUsername = "";
         animation: spin 1s linear infinite;
     }
 
-    /* Модальное окно */
+    /* РњРѕРґР°Р»СЊРЅРѕРµ РѕРєРЅРѕ */
     .modal-overlay {
         position: fixed;
         top: 0;
