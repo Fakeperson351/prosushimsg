@@ -53,7 +53,11 @@ builder.Services.AddCors(options =>
                 "http://localhost:5001", 
                 "https://localhost:5001",
                 "http://localhost:5296",  // Visual Studio может использовать динамические порты
-                "https://localhost:5296"
+                "https://localhost:5296",
+                "http://chat.moviequotebot.ru",  // 🔥 Production домен
+                "https://chat.moviequotebot.ru", // 🔥 Production HTTPS
+                "http://176.119.159.187:5000",   // 🔥 IP адрес сервера
+                "https://176.119.159.187:5000"
               )
               .AllowAnyMethod()
               .AllowAnyHeader()

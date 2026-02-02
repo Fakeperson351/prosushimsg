@@ -1,0 +1,5 @@
+﻿<!-- SVG заглушка для иконки 512x512 -->
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#ff6b00"/>
+  <text x="50%" y="50%" font-size="200" fill="#fff" text-anchor="middle" dy=".3em" font-family="Arial, sans-serif" font-weight="bold">PS</text>
+</svg>

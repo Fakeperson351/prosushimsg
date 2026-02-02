@@ -4,11 +4,26 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ProSushiMsg.Client</title>
+    <title>ProSushi Messenger</title>
     <base href="/" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Корпоративный мессенджер для команды ProSushi">
+    <meta name="theme-color" content="#ff6b00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ProSushi">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Иконки для разных устройств -->
+    <link rel="icon" type="image/svg+xml" href="icon-192x192.svg" />
+    <link rel="apple-touch-icon" href="icon-192x192.svg" />
+    
+    <!-- Стили -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
     <link href="ProSushiMsg.Client.styles.css" rel="stylesheet" />
 </head>
 
@@ -35,6 +50,22 @@
                 element.scrollTop = element.scrollHeight;
             }
         };
+        
+        // 🔥 Регистрация Service Worker для PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('✅ Service Worker зарегистрирован:', reg.scope))
+                    .catch(err => console.error('❌ Ошибка Service Worker:', err));
+            });
+        }
+        
+        // 🔔 Запрос разрешения на уведомления
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+                console.log('Уведомления:', permission);
+            });
+        }
     </script>
 
     <script src="_framework/blazor.webassembly.js"></script>

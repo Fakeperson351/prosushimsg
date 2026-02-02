@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.SignalR.Client;
+п»їusing Microsoft.AspNetCore.SignalR.Client;
 
 namespace ProSushiMsg.Client.Services;
 
 /// <summary>
-/// Управляет SignalR подключением к ChatHub.
-/// Обрабатывает реал-тайм сообщения и события онлайн/оффлайн.
+/// РЈРїСЂР°РІР»СЏРµС‚ SignalR РїРѕРґРєР»СЋС‡РµРЅРёРµРј Рє ChatHub.
+/// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ СЂРµР°Р»-С‚Р°Р№Рј СЃРѕРѕР±С‰РµРЅРёСЏ Рё СЃРѕР±С‹С‚РёСЏ РѕРЅР»Р°Р№РЅ/РѕС„С„Р»Р°Р№РЅ.
 /// </summary>
 public class SignalRService : IAsyncDisposable
 {
@@ -22,12 +22,13 @@ public class SignalRService : IAsyncDisposable
     public SignalRService(AuthService authService, string hubUrl = "http://localhost:5000")
     {
         _authService = authService;
-        _hubUrl = hubUrl;
-        Console.WriteLine($"? SignalRService создан с URL: {_hubUrl}");
+        // рџ”§ РЈР±РёСЂР°РµРј trailing slash, С‡С‚РѕР±С‹ РёР·Р±РµР¶Р°С‚СЊ РґРІРѕР№РЅРѕРіРѕ СЃР»СЌС€Р°
+        _hubUrl = hubUrl.TrimEnd('/');
+        Console.WriteLine($"? SignalRService СЃРѕР·РґР°РЅ СЃ URL: {_hubUrl}");
     }
 
     /// <summary>
-    /// Подключается к ChatHub с JWT токеном.
+    /// РџРѕРґРєР»СЋС‡Р°РµС‚СЃСЏ Рє ChatHub СЃ JWT С‚РѕРєРµРЅРѕРј.
     /// </summary>
     public async Task ConnectAsync()
     {
@@ -35,16 +36,16 @@ public class SignalRService : IAsyncDisposable
             return;
 
         if (string.IsNullOrEmpty(_authService.CurrentToken))
-            throw new InvalidOperationException("Требуется аутентификация");
+            throw new InvalidOperationException("РўСЂРµР±СѓРµС‚СЃСЏ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ");
 
         _connection = new HubConnectionBuilder()
-            .WithUrl($"{_hubUrl}/chathub?access_token={_authService.CurrentToken}")
+            .WithUrl($"{_hubUrl.TrimEnd('/')}/chathub?access_token={_authService.CurrentToken}")
             .WithAutomaticReconnect(
                 new[] { TimeSpan.Zero, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(10) })
-            .AddJsonProtocol() // Используем JSON вместо MessagePack
+            .AddJsonProtocol() // РСЃРїРѕР»СЊР·СѓРµРј JSON РІРјРµСЃС‚Рѕ MessagePack
             .Build();
 
-        // Обработчики сообщений
+        // РћР±СЂР°Р±РѕС‚С‡РёРєРё СЃРѕРѕР±С‰РµРЅРёР№
         _connection.On<int, string, string>("ReceiveMessage", (userId, userName, message) =>
         {
             OnMessageReceived?.Invoke(userId, userName, message);
@@ -57,20 +58,20 @@ public class SignalRService : IAsyncDisposable
 
         _connection.Reconnecting += error =>
         {
-            Console.WriteLine($"Переподключение... {error?.Message}");
+            Console.WriteLine($"РџРµСЂРµРїРѕРґРєР»СЋС‡РµРЅРёРµ... {error?.Message}");
             return Task.CompletedTask;
         };
 
         _connection.Reconnected += async (connectionId) =>
         {
-            Console.WriteLine($"Переподключился! Connection ID: {connectionId}");
+            Console.WriteLine($"РџРµСЂРµРїРѕРґРєР»СЋС‡РёР»СЃСЏ! Connection ID: {connectionId}");
             OnConnected?.Invoke();
             await Task.CompletedTask;
         };
 
         _connection.Closed += error =>
         {
-            Console.WriteLine($"Разорвано: {error?.Message}");
+            Console.WriteLine($"Р Р°Р·РѕСЂРІР°РЅРѕ: {error?.Message}");
             OnDisconnected?.Invoke();
             return Task.CompletedTask;
         };
@@ -80,12 +81,12 @@ public class SignalRService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Отправляет сообщение через SignalR.
+    /// РћС‚РїСЂР°РІР»СЏРµС‚ СЃРѕРѕР±С‰РµРЅРёРµ С‡РµСЂРµР· SignalR.
     /// </summary>
     public async Task SendMessageAsync(string message, int? groupId = null)
     {
         if (!IsConnected)
-            throw new InvalidOperationException("Не подключено к серверу");
+            throw new InvalidOperationException("РќРµ РїРѕРґРєР»СЋС‡РµРЅРѕ Рє СЃРµСЂРІРµСЂСѓ");
 
         if (groupId.HasValue)
             await _connection!.SendAsync("SendGroupMessage", groupId.Value, message);
@@ -94,7 +95,7 @@ public class SignalRService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Отправляет статус "печатаю".
+    /// РћС‚РїСЂР°РІР»СЏРµС‚ СЃС‚Р°С‚СѓСЃ "РїРµС‡Р°С‚Р°СЋ".
     /// </summary>
     public async Task SendTypingAsync(int? groupId = null)
     {
@@ -105,7 +106,7 @@ public class SignalRService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Отправляет событие о прочтении сообщения.
+    /// РћС‚РїСЂР°РІР»СЏРµС‚ СЃРѕР±С‹С‚РёРµ Рѕ РїСЂРѕС‡С‚РµРЅРёРё СЃРѕРѕР±С‰РµРЅРёСЏ.
     /// </summary>
     public async Task MarkAsReadAsync(int messageId)
     {

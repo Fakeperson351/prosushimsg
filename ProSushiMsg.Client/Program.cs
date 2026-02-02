@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore;  // ← вот этот using
+
 using ProSushiMsg.Client;
 using ProSushiMsg.Client.Services;
 

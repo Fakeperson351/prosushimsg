@@ -1,7 +1,7 @@
-{
+п»ї{
   "name": "ProSushi Messenger",
   "short_name": "ProSushi",
-  "description": "Корпоративный мессенджер для команды",
+  "description": "РљРѕСЂРїРѕСЂР°С‚РёРІРЅС‹Р№ РјРµСЃСЃРµРЅРґР¶РµСЂ РґР»СЏ РєРѕРјР°РЅРґС‹ ProSushi СЃ РґРѕСЃС‚Р°РІРєРѕР№ СЃСѓС€Рё",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,21 +10,21 @@
   "background_color": "#ffffff",
   "icons": [
     {
-      "src": "icon-192x192.png",
+      "src": "icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "icon-512x512.png",
+      "src": "icon-512x512.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "icon-192x192.png",
+      "src": "icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],
@@ -35,16 +35,16 @@
       "type": "image/png"
     }
   ],
-  "categories": ["productivity"],
+  "categories": ["productivity", "business"],
   "shortcuts": [
     {
-      "name": "Новый чат",
-      "short_name": "Чат",
-      "description": "Создать новый чат",
-      "url": "/new-chat",
+      "name": "РќРѕРІС‹Р№ С‡Р°С‚",
+      "short_name": "Р§Р°С‚",
+      "description": "РћС‚РєСЂС‹С‚СЊ РЅРѕРІС‹Р№ С‡Р°С‚",
+      "url": "/chats",
       "icons": [
         {
-          "src": "icon-96x96.png",
+          "src": "icon-192x192.png",
           "sizes": "96x96",
           "type": "image/png"
         }
